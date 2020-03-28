@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import { Feather } from '@expo/vector-icons';
-import { useNavigation} from '@react-navigation/native';
+import { useNavigation, useRoute} from '@react-navigation/native';
 import { View, FlatList, Image, Text, TouchableOpacity } from 'react-native';
 
 import api from '../../services/api';
@@ -11,6 +11,9 @@ import styles from './styles'
 export default function Incidents() {
     const [incidents, setIncidents] = useState([]);
     const [total, setTotal] = useState(0);
+    const [page, setPage] = useState(1);
+    const [loading, setLoading] = useState(false);
+
     const navigation = useNavigation();
 
     function navigateToDetail(incident){
@@ -18,9 +21,27 @@ export default function Incidents() {
     }
 
     async function loadIncidents(){
-        const response = await api.get('incidents');
-        setIncidents(response.data);
+        if(loading){
+            return;
+        }
+        if(total > 0 && incidents.length == total){
+            return;
+        }
+
+        
+        setLoading(true);
+        
+        const response = await api.get('incidents', {
+            params: {page}
+        });
+        console.log(response.data)
+        
+        setIncidents([...incidents, ...response.data]);
         setTotal(response.headers['x-total-count'])
+        setPage(page+1);
+        setLoading(false);
+        console.log(total, incidents.length)
+
     }
 
     useEffect(()=>{
@@ -40,10 +61,12 @@ export default function Incidents() {
 
 
             <FlatList
-                syle={styles.incidentList}
+                style={styles.incidentList}
                 data={incidents}
                 showsVerticalScrollIndicator ={false}
                 keyExtractor ={incident => String(incident.id)}
+                onEndReached={loadIncidents}
+                // onEndReachedThreshold={0.05}
                 renderItem={({item: incident}) => (
                     <View style={styles.incident}>
                         <Text style={styles.incidentProperty}>ONG: </Text>
