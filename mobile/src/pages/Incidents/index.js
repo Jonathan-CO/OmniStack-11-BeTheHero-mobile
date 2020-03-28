@@ -34,13 +34,11 @@ export default function Incidents() {
         const response = await api.get('incidents', {
             params: {page}
         });
-        console.log(response.data)
         
         setIncidents([...incidents, ...response.data]);
         setTotal(response.headers['x-total-count'])
         setPage(page+1);
         setLoading(false);
-        console.log(total, incidents.length)
 
     }
 
@@ -66,7 +64,7 @@ export default function Incidents() {
                 showsVerticalScrollIndicator ={false}
                 keyExtractor ={incident => String(incident.id)}
                 onEndReached={loadIncidents}
-                // onEndReachedThreshold={0.05}
+                onEndReachedThreshold={0.2}
                 renderItem={({item: incident}) => (
                     <View style={styles.incident}>
                         <Text style={styles.incidentProperty}>ONG: </Text>
